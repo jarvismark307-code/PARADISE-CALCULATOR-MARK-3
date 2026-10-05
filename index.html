@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voice Calculator</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #111827;
+    color: white;
+}
+
+.calculator {
+    width: 660px;
+    min-height: 510px;
+    padding: 65px 50px;
+    text-align: center;
+    background: #1f2937;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.25);
+}
+
+h1 {
+    margin: 0 0 27px;
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.status {
+    color: #5da0ff;
+    font-size: 24px;
+    min-height: 34px;
+    margin-bottom: 27px;
+}
+
+.input-box {
+    width: 100%;
+    height: 79px;
+    border: none;
+    border-radius: 15px;
+    padding: 0 25px;
+    text-align: center;
+    font-size: 25px;
+    color: #666;
+    outline: none;
+    background: #ffffff;
+}
+
+.input-box::placeholder {
+    color: #777;
+    opacity: 1;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin-top: 24px;
+}
+
+button {
+    height: 72px;
+    border: none;
+    border-radius: 15px;
+    padding: 0 34px;
+    font-size: 24px;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.speak {
+    background: #2864df;
+}
+
+.calculate {
+    background: #12a34a;
+}
+
+.clear {
+    background: #e52329;
+}
+
+.answer {
+    margin-top: 28px;
+    min-height: 36px;
+    font-size: 27px;
+    font-weight: 700;
+    color: white;
+}
+
+.message {
+    margin-top: 8px;
+    min-height: 25px;
+    font-size: 16px;
+    color: #facc15;
+}
+
+@media (max-width: 700px) {
+    .calculator {
+        width: 100%;
+        min-height: 100vh;
+        padding: 55px 22px;
+        border-radius: 0;
+    }
+
+    h1 {
+        font-size: 36px;
+    }
+
+    .input-box {
+        font-size: 20px;
+    }
+
+    .buttons {
+        gap: 10px;
+    }
+
+    button {
+        padding: 0 20px;
+        font-size: 19px;
+    }
+}
+
+@media (max-width: 450px) {
+    h1 {
+        font-size: 29px;
+    }
+
+    .buttons {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="calculator">
+
+    <h1>VOICE CALCULATOR</h1>
+
+    <div id="status" class="status">Ready</div>
+
+    <input
+        id="input"
+        class="input-box"
+        type="text"
+        placeholder="Example: 25 plus 10"
+        autocomplete="off"
+    >
+
+    <div class="buttons">
+        <button class="speak" onclick="voiceInput()">🎤 Speak</button>
+        <button class="calculate" onclick="calculateManual()">Calculate</button>
+        <button class="clear" onclick="clearCalculator()">Clear</button>
+    </div>
+
+    <div id="answer" class="answer"></div>
+    <div id="message" class="message"></div>
+
+</div>
+
+<script>
+/*
+    Your Python calculator converted to JavaScript
+    so it can run on GitHub Pages.
+*/
+
+function speak(text) {
+    if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+
+        const speech = new SpeechSynthesisUtterance(text);
+        speech.rate = 0.9;
+        speech.volume = 1;
+
+        window.speechSynthesis.speak(speech);
+    }
+}
+
+
+/* Your original operations */
+
+function add(a, b) {
+    return a + b;
+}
+
+function sub(a, b) {
+    return a - b;
+}
+
+function multiply(a, b) {
+    return a * b;
+}
+
+function divide(a, b) {
+    return a / b;
+}
+
+function power(a, b) {
+    return a ** b;
+}
+
+
+const operations = {
+    "+": add,
+    "-": sub,
+    "*": multiply,
+    "/": divide,
+    "**": power
+};
+
+
+/* Convert spoken words into calculator operators */
+
+function convertText(text) {
+
+    text = text.toLowerCase();
+
+    text = text.replace(/\bplus\b/g, " + ");
+    text = text.replace(/\badd\b/g, " + ");
+
+    text = text.replace(/\bminus\b/g, " - ");
+    text = text.replace(/\bsubtract\b/g, " - ");
+
+    text = text.replace(/\bmultiply\b/g, " * ");
+    text = text.replace(/\btimes\b/g, " * ");
+    text = text.replace(/\bx\b/g, " * ");
+    text = text.replace(/\binto\b/g, " * ");
+
+    text = text.replace(/\bdivided by\b/g, " / ");
+    text = text.replace(/\bdivide\b/g, " / ");
+
+    text = text.replace(/\bwhole power of\b/g, " ** ");
+    text = text.replace(/\bwhole power\b/g, " ** ");
+    text = text.replace(/\bpower of\b/g, " ** ");
+    text = text.replace(/\bpower\b/g, " ** ");
+
+    return text.replace(/\s+/g, " ").trim();
+}
+
+
+/* Calculate */
+
+function calculate(text) {
+
+    if (!text || text.trim() === "") {
+        return;
+    }
+
+    const convertedText = convertText(text);
+
+    document.getElementById("input").value = text;
+
+    const pattern =
+        /(-?\d+(?:\.\d+)?)\s*(\*\*|[+\-*/])\s*(-?\d+(?:\.\d+)?)/;
+
+    const match = convertedText.match(pattern);
+
+    if (!match) {
+
+        document.getElementById("status").textContent = "Invalid";
+
+        document.getElementById("message").textContent =
+            "Your operation is not valid. Please check once.";
+
+        document.getElementById("answer").textContent = "";
+
+        speak("Your operation is not valid. Please check once.");
+
+        return;
+    }
+
+    const n1 = parseFloat(match[1]);
+    const operation = match[2];
+    const n2 = parseFloat(match[3]);
+
+    if (operation === "/" && n2 === 0) {
+
+        document.getElementById("status").textContent = "Error";
+
+        document.getElementById("message").textContent =
+            "Cannot divide by zero.";
+
+        document.getElementById("answer").textContent = "";
+
+        speak("Cannot divide by zero.");
+
+        return;
+    }
+
+    const answer = operations[operation](n1, n2);
+
+    document.getElementById("status").textContent = "Result";
+
+    document.getElementById("answer").textContent =
+        `${n1} ${operation} ${n2} = ${answer}`;
+
+    document.getElementById("message").textContent =
+        "Your operation is valid.";
+
+    speak(`The answer is ${answer}`);
+}
+
+
+/* Manual Calculate button */
+
+function calculateManual() {
+
+    const text =
+        document.getElementById("input").value;
+
+    calculate(text);
+}
+
+
+/* Voice input */
+
+function voiceInput() {
+
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+
+        document.getElementById("status").textContent =
+            "Not Supported";
+
+        document.getElementById("message").textContent =
+            "Please use Google Chrome for voice input.";
+
+        speak("Please use Google Chrome for voice input.");
+
+        return;
+    }
+
+    const recognition =
+        new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    document.getElementById("status").textContent =
+        "Listening...";
+
+    document.getElementById("message").textContent =
+        "Speak your calculation";
+
+    speak("Speak your calculation");
+
+    recognition.start();
+
+    recognition.onresult = function(event) {
+
+        const text =
+            event.results[0][0].transcript;
+
+        document.getElementById("input").value = text;
+
+        document.getElementById("status").textContent =
+            "Processing...";
+
+        calculate(text);
+    };
+
+    recognition.onerror = function(event) {
+
+        document.getElementById("status").textContent =
+            "Error";
+
+        if (event.error === "not-allowed") {
+
+            document.getElementById("message").textContent =
+                "Microphone permission was denied.";
+
+            speak("Microphone permission was denied.");
+
+        } else {
+
+            document.getElementById("message").textContent =
+                "Could not understand. Please try again.";
+
+            speak("Could not understand. Please try again.");
+        }
+    };
+
+    recognition.onend = function() {
+
+        console.log("Recording finished.");
+    };
+}
+
+
+/* Clear */
+
+function clearCalculator() {
+
+    document.getElementById("input").value = "";
+
+    document.getElementById("status").textContent =
+        "Ready";
+
+    document.getElementById("answer").textContent =
+        "";
+
+    document.getElementById("message").textContent =
+        "";
+
+    if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+    }
+}
+
+
+/* Press Enter to calculate */
+
+document.getElementById("input").addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Enter") {
+            calculateManual();
+        }
+    }
+);
+</script>
+
+</body>
+</html>
